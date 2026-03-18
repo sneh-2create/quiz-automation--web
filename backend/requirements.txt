@@ -1,0 +1,32 @@
+# ── Web Framework ────────────────────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy
+alembic
+
+# ── Validation / Settings ────────────────────────────────────────────────────
+pydantic
+pydantic-settings
+
+# ── Auth / Security ──────────────────────────────────────────────────────────
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+python-multipart
+
+# ── AI (Google Gemini) ───────────────────────────────────────────────────────
+# google-genai is the new unified SDK: `from google import genai`
+google-genai
+
+# ── PDF Processing ────────────────────────────────────────────────────────────
+PyPDF2
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+python-dotenv
+pandas
+openpyxl
+httpx
+aiofiles
+email-validator

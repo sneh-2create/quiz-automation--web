@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-color: #F8FAFC;
+  --surface-color: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --border-color: #E2E8F0;
+  --primary-color: #10B981;
+  --secondary-color: #059669;
+  --accent-color: #34D399;
+}
+
+.dark {
+  --bg-color: #0F172A;
+  --surface-color: #1E293B;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --border-color: #334155;
+  --primary-color: #10B981;
+  --secondary-color: #059669;
+  --accent-color: #34D399;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply antialiased transition-colors duration-300;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter', sans-serif;
+    /* Stable, academic look */
+    @apply font-bold tracking-tight;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--bg-color);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full;
+    background-color: var(--border-color);
+  }
+}
+
+@layer components {
+  .card {
+    @apply transition-all duration-300 p-6 bg-surface-color border border-border-color rounded-xl shadow-soft;
+  }
+
+  .card-premium {
+    @apply card relative overflow-hidden;
+    /* Removed heavy top border, we will use subtle internal accents instead */
+  }
+
+  .btn-primary {
+    @apply px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 bg-brand-primary text-white shadow-sm hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-2.5 rounded-lg font-medium transition-all duration-200 border active:scale-[0.98] flex items-center justify-center gap-2 border-border-color bg-surface-color text-text-primary hover:bg-bg-color hover:border-gray-300;
+  }
+
+  .input {
+    @apply w-full px-4 py-2.5 rounded-md transition-all duration-300 focus:outline-none focus:ring-1;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .input:focus {
+    border-color: var(--primary-color);
+    --tw-ring-color: var(--primary-color);
+  }
+
+  .badge {
+    @apply px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider;
+    background-color: var(--border-color);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .stat-card {
+    @apply card flex flex-col gap-1;
+    border-left: 4px solid var(--secondary-color);
+  }
+
+  .glass-nav {
+    @apply sticky top-0 z-50 border-b transition-all duration-300 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md;
+    border-color: var(--border-color);
+  }
+}
