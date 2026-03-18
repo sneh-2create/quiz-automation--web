@@ -3,7 +3,7 @@
 A modern, full-stack quiz and learning analytics platform designed for college environments. Featuring AI-powered question generation, real-time analytics, gamification, and anti-cheat measures.
 
 <<<<<<< HEAD
-## 🚀 Tech Stack
+##  Tech Stack
 =======
 ##  Tech Stack
 >>>>>>> 070b50431153079ba2be70f34a8820e83c870654
@@ -14,25 +14,25 @@ A modern, full-stack quiz and learning analytics platform designed for college e
 - **Orchestration**: Docker & Docker Compose.
 
 <<<<<<< HEAD
-## ✨ Key Features
+## Key Features
 
 - **For Teachers**:
-  - 🤖 **AI Question Generation**: Generate high-quality MCQs from topics, text content, or PDF uploads.
-  - 📂 **Question Bank**: Manage a central repository of questions with bulk CSV/Excel import.
-  - 📊 **Rich Analytics**: Visual distribution of scores, question difficulty analysis, and class leaderboards.
-  - ⚙️ **Quiz Engine**: Flexible configuration (timers, negative marking, randomized options).
+  -  **AI Question Generation**: Generate high-quality MCQs from topics, text content, or PDF uploads.
+  -  **Question Bank**: Manage a central repository of questions with bulk CSV/Excel import.
+  -  **Rich Analytics**: Visual distribution of scores, question difficulty analysis, and class leaderboards.
+  -  **Quiz Engine**: Flexible configuration (timers, negative marking, randomized options).
 
 - **For Students**:
-  - 🎮 **Gamified Dashboard**: XP points, levels, and achievement progress.
-  - 🏆 **Leaderboards**: Competitive ranking across the platform.
-  - 📝 **Smart Quiz Engine**: Fullscreen mode, tab-switch detection, and automatic timer submission.
-  - 💡 **AI Explanations**: "Explain my mistake" feature for deep learning insights.
+  -  **Gamified Dashboard**: XP points, levels, and achievement progress.
+  -  **Leaderboards**: Competitive ranking across the platform.
+  -  **Smart Quiz Engine**: Fullscreen mode, tab-switch detection, and automatic timer submission.
+  -  **AI Explanations**: "Explain my mistake" feature for deep learning insights.
 
 - **For Admins**:
-  - 🛡️ **User Management**: Approve teacher accounts and monitor system performance.
-  - 📈 **Platform Stats**: Global overview of users, quizzes, and attempts.
+  - **User Management**: Approve teacher accounts and monitor system performance.
+  - **Platform Stats**: Global overview of users, quizzes, and attempts.
 
-## 🛠️ Local Setup
+## Local Setup
 =======
 ##  Key Features
 
@@ -80,7 +80,7 @@ npm run dev
 ```
 
 <<<<<<< HEAD
-## 🐳 Docker Setup
+##Docker Setup
 =======
 ## Docker Setup
 >>>>>>> 070b50431153079ba2be70f34a8820e83c870654
@@ -89,8 +89,7 @@ Run the entire platform with a single command:
 docker-compose up --build
 ```
 
-<<<<<<< HEAD
-## 👤 Default Accounts (for testing)
+<<< Default Accounts (for testing)
 =======
 ## Default Accounts (for testing)
 >>>>>>> 070b50431153079ba2be70f34a8820e83c870654
@@ -99,7 +98,7 @@ docker-compose up --build
 - **Student**: `student@quizplatform.com` / `Student@123`
 
 <<<<<<< HEAD
-## 🛡️ Anti-Cheat Measures
+##  Anti-Cheat Measures
 =======
 # Anti-Cheat Measures
 >>>>>>> 070b50431153079ba2be70f34a8820e83c870654
@@ -109,7 +108,4 @@ The platform includes:
 3. **Fullscreen Encouragement**: Advised mode for secure attempts.
 <<<<<<< HEAD
 
----
-Built with ❤️ by Antigravity
-=======
->>>>>>> 070b50431153079ba2be70f34a8820e83c870654
+
