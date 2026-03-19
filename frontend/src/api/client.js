@@ -1,9 +1,15 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+// Prefer env configuration (usually backend on :8000).
+// If backend isn't reachable (ECONNREFUSED) we retry once against :8001.
+const API_BASE_PRIMARY = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_BASE_FALLBACK =
+    API_BASE_PRIMARY && API_BASE_PRIMARY.includes(":8000")
+        ? API_BASE_PRIMARY.replace(":8000", ":8001")
+        : "http://localhost:8001/api";
 
 const api = axios.create({
-    baseURL: API_BASE,
+    baseURL: API_BASE_PRIMARY,
     headers: { "Content-Type": "application/json" },
 });
 
@@ -17,7 +23,20 @@ api.interceptors.request.use((config) => {
 // Handle 401 globally
 api.interceptors.response.use(
     (res) => res,
-    (err) => {
+    async (err) => {
+        // If the configured backend (often :8000) is down, retry once against :8001.
+        const cfg = err?.config;
+        if (
+            cfg &&
+            !cfg.__retried_api_fallback &&
+            (err?.code === "ECONNREFUSED" || err?.message?.includes("ECONNREFUSED")) &&
+            String(cfg.baseURL || "").includes(":8000")
+        ) {
+            cfg.__retried_api_fallback = true;
+            cfg.baseURL = API_BASE_FALLBACK;
+            return api.request(cfg);
+        }
+
         if (err.response?.status === 401) {
             localStorage.removeItem("access_token");
             localStorage.removeItem("user");

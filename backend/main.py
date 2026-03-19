@@ -31,43 +31,54 @@ app.include_router(ai.router, prefix="/api")
 @app.on_event("startup")
 def startup_event():
     create_tables()
-    _seed_admin()
+    _ensure_demo_accounts()
 
 
-def _seed_admin():
-    """Create default admin account on first run"""
+def _ensure_demo_accounts():
+    """Create/update demo teacher and student accounts for local testing."""
     from app.db.database import SessionLocal
     from app.models.user import User
     from app.core.security import get_password_hash
 
     db = SessionLocal()
     try:
-        teacher = db.query(User).filter(User.email == "teacher@quizplatform.com").first()
-        if not teacher:
-            # Seed a demo teacher
-            teacher = User(
-                email="teacher@quizplatform.com",
-                full_name="Demo Teacher",
-                password_hash=get_password_hash("Teacher@123"),
-                role="teacher",
-                is_active=True,
-                is_approved=True,
-            )
-            db.add(teacher)
-            # Seed a demo student
-            student = User(
-                email="student@quizplatform.com",
-                full_name="Demo Student",
-                password_hash=get_password_hash("Student@123"),
-                role="student",
-                is_active=True,
-                is_approved=True,
-            )
-            db.add(student)
-            db.commit()
-            print("✅ Seeded default accounts: teacher, student")
-        else:
-            print("✅ Database already initialized")
+        demo_accounts = [
+            {
+                "email": "teacher@quizplatform.com",
+                "full_name": "Demo Teacher",
+                "password": "Teacher@123",
+                "role": "teacher",
+            },
+            {
+                "email": "student@quizplatform.com",
+                "full_name": "Demo Student",
+                "password": "Student@123",
+                "role": "student",
+            },
+        ]
+
+        for acct in demo_accounts:
+            user = db.query(User).filter(User.email == acct["email"]).first()
+            if not user:
+                user = User(
+                    email=acct["email"],
+                    full_name=acct["full_name"],
+                    password_hash=get_password_hash(acct["password"]),
+                    role=acct["role"],
+                    is_active=True,
+                    is_approved=True,
+                )
+                db.add(user)
+            else:
+                # Keep local demo logins reliable across schema/hash changes.
+                user.full_name = acct["full_name"]
+                user.password_hash = get_password_hash(acct["password"])
+                user.is_active = True
+                user.is_approved = True
+                user.role = acct["role"]
+
+        db.commit()
+        print("✅ Demo accounts ready: teacher@quizplatform.com, student@quizplatform.com")
     except Exception as e:
         print(f"⚠️ Seeding error: {e}")
         db.rollback()

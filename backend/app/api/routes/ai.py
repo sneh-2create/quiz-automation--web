@@ -5,7 +5,7 @@ from app.db.database import get_db
 from app.models.user import User
 from app.schemas.attempt import AIGenerateRequest, AIExplainRequest, AIFromContentRequest
 from app.core.dependencies import get_current_user, get_teacher
-from app.services.ai_service import AIService
+from app.services.ai_service import AIService, AIServiceError
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 ai_service = AIService()
@@ -18,15 +18,18 @@ async def generate_questions(
     teacher: User = Depends(get_teacher),
 ):
     """Generate MCQ questions using Gemini AI"""
-    questions = await ai_service.generate_questions(
-        topic=data.topic,
-        subject=data.subject,
-        difficulty=data.difficulty,
-        num_questions=data.num_questions,
-        quiz_id=data.quiz_id,
-        teacher_id=teacher.id,
-        db=db,
-    )
+    try:
+        questions = await ai_service.generate_questions(
+            topic=data.topic,
+            subject=data.subject,
+            difficulty=data.difficulty,
+            num_questions=data.num_questions,
+            quiz_id=data.quiz_id,
+            teacher_id=teacher.id,
+            db=db,
+        )
+    except AIServiceError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     return {"generated": len(questions), "questions": questions}
 
 
@@ -50,15 +53,18 @@ async def generate_from_content(
     teacher: User = Depends(get_teacher),
 ):
     """Generate questions from pasted text content"""
-    questions = await ai_service.generate_from_content(
-        content=data.content,
-        topic=data.topic,
-        difficulty=data.difficulty,
-        num_questions=data.num_questions,
-        quiz_id=data.quiz_id,
-        teacher_id=teacher.id,
-        db=db,
-    )
+    try:
+        questions = await ai_service.generate_from_content(
+            content=data.content,
+            topic=data.topic,
+            difficulty=data.difficulty,
+            num_questions=data.num_questions,
+            quiz_id=data.quiz_id,
+            teacher_id=teacher.id,
+            db=db,
+        )
+    except AIServiceError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     return {"generated": len(questions), "questions": questions}
 
 
@@ -81,13 +87,16 @@ async def generate_from_pdf(
     if not text.strip():
         raise HTTPException(status_code=400, detail="Could not extract text from PDF")
 
-    questions = await ai_service.generate_from_content(
-        content=text,
-        topic=file.filename.replace(".pdf", ""),
-        difficulty=difficulty,
-        num_questions=num_questions,
-        quiz_id=quiz_id,
-        teacher_id=teacher.id,
-        db=db,
-    )
+    try:
+        questions = await ai_service.generate_from_content(
+            content=text,
+            topic=file.filename.replace(".pdf", ""),
+            difficulty=difficulty,
+            num_questions=num_questions,
+            quiz_id=quiz_id,
+            teacher_id=teacher.id,
+            db=db,
+        )
+    except AIServiceError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     return {"generated": len(questions), "questions": questions}

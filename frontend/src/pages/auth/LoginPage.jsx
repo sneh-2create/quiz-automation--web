@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Zap, Mail, Lock, Eye, EyeOff, Github, Chrome, ArrowLeft } from "lucide-react";
@@ -11,6 +11,12 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Prevent stale/bad token loops when user intentionally opens login page.
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

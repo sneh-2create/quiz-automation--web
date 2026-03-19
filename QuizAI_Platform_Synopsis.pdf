@@ -1,0 +1,275 @@
+%PDF-1.4
+%
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [ 4 0 R 6 0 R 8 0 R ] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 3424 >>
+stream
+BT
+/F1 11 Tf
+1 0 0 1 54 727 Tm
+(Quiz Automation Platform - AI-Based Question Generation and Learning Analytics) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Submitted By: [Your Name]) Tj
+0 -13 Td
+(Guide/Mentor: [Mentor Name]) Tj
+0 -13 Td
+(Department/College: [Department, College]) Tj
+0 -13 Td
+(Academic Year: 2025-2026) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Front page note: This synopsis should be pre-approved by the mentor.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(1. Introduction) Tj
+0 -13 Td
+(The Quiz Automation Platform is a web-based system designed to simplify quiz creation, improve quiz evaluation speed, and provide meaningful learning analytics for college teaching environments. The platform enables teachers to generate and manage MCQs \\(including AI-assisted question generation\\) while students can attempt quizzes in a timed and structured manner.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(A key objective of this project is to make teaching analytics decision-ready. After a quiz is submitted, the teacher can analyze student performance through a dashboard that highlights:) Tj
+0 -13 Td
+(- The top performer in the quiz \\(overall ranking\\).) Tj
+0 -13 Td
+(- Top 3 students stream-wise.) Tj
+0 -13 Td
+(- Top 3 students area/region-wise.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(To support academic integrity during live attempts, the platform integrates an anti-cheating logging mechanism and provides teacher-visible logs. The system also includes gamification \\(XP, levels, badges\\) to improve student engagement and consistency.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Core workflow:) Tj
+0 -13 Td
+(1\\) Secure signup/login for teachers and students.) Tj
+0 -13 Td
+(2\\) Teacher quiz creation and AI question generation with review/approval.) Tj
+0 -13 Td
+(3\\) Student timed quiz attempts.) Tj
+0 -13 Td
+(4\\) Automatic evaluation and instant results.) Tj
+0 -13 Td
+(5\\) Teacher dashboards with quiz analytics and top-3 segmented rankings.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(2. Feasibility Study) Tj
+0 -13 Td
+(2.1 Technical Feasibility) Tj
+0 -13 Td
+(The platform uses modern web technologies:) Tj
+0 -13 Td
+(- Frontend: React \\(Vite\\).) Tj
+0 -13 Td
+(- Backend: FastAPI \\(Python\\).) Tj
+0 -13 Td
+(- Database: SQLite with ORM \\(SQLAlchemy\\).) Tj
+0 -13 Td
+(- AI Integration: Google Gemini API.) Tj
+0 -13 Td
+(- Security: JWT authentication and role-based access \\(teacher vs student\\).) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(2.2 Operational Feasibility) Tj
+0 -13 Td
+(Teachers can create and publish quizzes, while students can attempt them immediately. Analytics are available instantly through API-driven dashboards.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(2.3 Economic Feasibility) Tj
+0 -13 Td
+(Using open-source frameworks and a lightweight database makes the solution cost-effective for college deployments.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(2.4 Security and Integrity Feasibility) Tj
+0 -13 Td
+(- Password hashing and JWT-based sessions secure signup/login.) Tj
+0 -13 Td
+(- Anti-cheat event logging supports integrity during quiz attempts.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(3. Proposed Methodology) Tj
+0 -13 Td
+(3.1 System Modules) Tj
+0 -13 Td
+(1\\) Signup & Authentication Module \\(Required for presentation\\)) Tj
+0 -13 Td
+(- Teacher and student signup.) Tj
+0 -13 Td
+(- Login returns JWT token.) Tj
+0 -13 Td
+(- Role-based permissions restrict teacher and student capabilities.) Tj
+0 -13 Td
+(- The presentation flow supports end-to-end demonstration: signup/login -> quiz -> attempt -> analytics.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 3066 >>
+stream
+BT
+/F1 11 Tf
+1 0 0 1 54 727 Tm
+() Tj
+0 -13 Td
+(2\\) Quiz Management Module) Tj
+0 -13 Td
+(- Teacher creates quizzes with settings such as duration, difficulty, pass percentage, and negative marking.) Tj
+0 -13 Td
+(- Teacher publishes/unpublishes quizzes for student visibility.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(3\\) AI Question Generation & Review Workflow) Tj
+0 -13 Td
+(- Teacher inputs topic/content \\(and optionally PDF\\).) Tj
+0 -13 Td
+(- Gemini generates MCQs in a structured format \\(question, options, correct answer, explanation\\).) Tj
+0 -13 Td
+(- Generated questions are stored for teacher review and approval before being used.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(4\\) Student Attempt & Evaluation Engine) Tj
+0 -13 Td
+(- Student starts an attempt with a timer.) Tj
+0 -13 Td
+(- Answers are saved per question.) Tj
+0 -13 Td
+(- On submission, backend evaluates answers, calculates score/percentage, applies negative marking if enabled, and determines pass/fail.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(5\\) Teacher Analytics & Reporting Module) Tj
+0 -13 Td
+(Teacher analytics are presented as:) Tj
+0 -13 Td
+(A\\) Top student in the quiz \\(overall leaderboard\\).) Tj
+0 -13 Td
+(B\\) Top 3 students stream-wise.) Tj
+0 -13 Td
+(C\\) Top 3 students area/region-wise.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(This segmentation enables teachers to identify strong performers and focus on weak groups effectively.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(6\\) Anti-Cheating Logging & Integrity Support) Tj
+0 -13 Td
+(Suspicious events are recorded during attempts for later teacher review.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(7\\) Gamification Layer) Tj
+0 -13 Td
+(XP, levels, streaks, and badges reward consistent participation and high performance.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(3.2 Data Flow \\(High-Level\\)) Tj
+0 -13 Td
+(- Teacher signup/login -> quiz creation -> AI generation -> approval -> publish.) Tj
+0 -13 Td
+(- Student signup/login -> browse live quizzes -> start attempt -> submit answers -> get results.) Tj
+0 -13 Td
+(- Teacher reads analytics -> top student and top-3 segmented rankings.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(4. Scope of the Project) Tj
+0 -13 Td
+(4.1 Current Scope) Tj
+0 -13 Td
+(- Signup/login system for teachers and students.) Tj
+0 -13 Td
+(- Teacher quiz creation and AI-assisted question generation.) Tj
+0 -13 Td
+(- Student timed quiz attempts and automatic evaluation.) Tj
+0 -13 Td
+(- Teacher analytics dashboard for overall top performer and top-3 segmented rankings \\(stream-wise and area/region-wise\\).) Tj
+0 -13 Td
+(- Anti-cheat logging and gamification.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(4.2 Future Enhancements \\(Optional\\)) Tj
+0 -13 Td
+(- More advanced segmentation and filtering.) Tj
+0 -13 Td
+(- Enhanced proctoring features.) Tj
+0 -13 Td
+(- Multi-language AI generation.) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(5. Bibliography) Tj
+0 -13 Td
+(1\\) FastAPI Documentation: https://fastapi.tiangolo.com/) Tj
+0 -13 Td
+(2\\) React Documentation: https://react.dev/) Tj
+0 -13 Td
+(3\\) Vite Documentation: https://vitejs.dev/) Tj
+0 -13 Td
+(4\\) SQLAlchemy Documentation: https://www.sqlalchemy.org/) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 250 >>
+stream
+BT
+/F1 11 Tf
+1 0 0 1 54 727 Tm
+(5\\) JWT \\(RFC 7519\\): https://www.rfc-editor.org/rfc/rfc7519) Tj
+0 -13 Td
+(6\\) Google Gemini API Documentation: https://ai.google.dev/) Tj
+0 -13 Td
+(7\\) PyPDF2 Documentation: https://pypdf2.readthedocs.io/) Tj
+ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000135 00000 n 
+0000000205 00000 n 
+0000000331 00000 n 
+0000003806 00000 n 
+0000003932 00000 n 
+0000007049 00000 n 
+0000007175 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+7475
+%%EOF

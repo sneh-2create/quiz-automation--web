@@ -1,9 +1,13 @@
 from pydantic_settings import BaseSettings
 from typing import List
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./quiz_platform.db"
+    DATABASE_URL: str = f"sqlite:///{(BASE_DIR / 'quiz_platform.db').as_posix()}"
     SECRET_KEY: str = "change-me-to-a-long-random-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -15,7 +19,7 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.CORS_ORIGINS.split(",")]
 
     class Config:
-        env_file = ".env"
+        env_file = str(BASE_DIR / ".env")
 
 
 settings = Settings()

@@ -1,77 +1,45 @@
-# QuizAI Platform - AI-Powered Smart Quiz & Learning Analytics
+# Quiz Automation Platform
 
-A modern, full-stack quiz and learning analytics platform designed for college environments. Featuring AI-powered question generation, real-time analytics, gamification, and anti-cheat measures.
+A full-stack quiz platform for teachers and students with AI-assisted question generation, quiz management, and learning analytics.
 
-<<<<<<< HEAD
-##  Tech Stack
-=======
-##  Tech Stack
->>>>>>> 070b50431153079ba2be70f34a8820e83c870654
+## Tech Stack
 
-- **Frontend**: React (Vite), Tailwind CSS, Lucide React (Icons), Recharts (Analytics), Framer Motion (Animations), Axios.
-- **Backend**: FastAPI, SQLAlchemy (PostgreSQL/SQLite), JWT Auth, Pydantic.
-- **AI**: Gemini API (Google Generative AI).
-- **Orchestration**: Docker & Docker Compose.
+- Frontend: React (Vite), Tailwind CSS, Axios
+- Backend: FastAPI, SQLAlchemy, JWT authentication
+- Database: SQLite (local development)
+- AI: Gemini API
 
-<<<<<<< HEAD
-## Key Features
+## Features
 
-- **For Teachers**:
-  -  **AI Question Generation**: Generate high-quality MCQs from topics, text content, or PDF uploads.
-  -  **Question Bank**: Manage a central repository of questions with bulk CSV/Excel import.
-  -  **Rich Analytics**: Visual distribution of scores, question difficulty analysis, and class leaderboards.
-  -  **Quiz Engine**: Flexible configuration (timers, negative marking, randomized options).
-
-- **For Students**:
-  -  **Gamified Dashboard**: XP points, levels, and achievement progress.
-  -  **Leaderboards**: Competitive ranking across the platform.
-  -  **Smart Quiz Engine**: Fullscreen mode, tab-switch detection, and automatic timer submission.
-  -  **AI Explanations**: "Explain my mistake" feature for deep learning insights.
-
-- **For Admins**:
-  - **User Management**: Approve teacher accounts and monitor system performance.
-  - **Platform Stats**: Global overview of users, quizzes, and attempts.
+- Teacher quiz creation and publishing flow
+- Manual question creation and bulk question management
+- AI-based question generation from topic/text/PDF
+- Student quiz attempts and results
+- Dashboard analytics and leaderboard
 
 ## Local Setup
-=======
-##  Key Features
 
-- **For Teachers**:
-  -  **AI Question Generation**: Generate high-quality MCQs from topics, text content, or PDF uploads.
-  -  **Question Bank**: Manage a central repository of questions with bulk CSV/Excel import.
-  -  **Rich Analytics**: Visual distribution of scores, question difficulty analysis, and class leaderboards.
-  -  **Quiz Engine**: Flexible configuration (timers, negative marking, randomized options).
+### Prerequisites
 
-- **For Students**:
-  -  **Gamified Dashboard**: XP points, levels, and achievement progress.
-  -  **Leaderboards**: Competitive ranking across the platform.
-  -  **Smart Quiz Engine**: Fullscreen mode, tab-switch detection, and automatic timer submission.
-  - **AI Explanations**: "Explain my mistake" feature for deep learning insights.
+- Node.js 18+
+- Python 3.9+
+- Gemini API key (optional, for AI generation)
 
-- **For Admins**:
-  - **User Management**: Approve teacher accounts and monitor system performance.
-  - **Platform Stats**: Global overview of users, quizzes, and attempts.
+### Backend
 
-##  Local Setup
->>>>>>> 070b50431153079ba2be70f34a8820e83c870654
-
-### 1. Prerequisites
-- Node.js (v18+)
-- Python (3.9+)
-- [Gemini API Key](https://aistudio.google.com/app/apikey)
-
-### 2. Backend Setup
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
 uvicorn main:app --reload
 ```
 
-### 3. Frontend Setup
+Backend URL: `http://localhost:8000`
+
+### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -79,33 +47,17 @@ cp .env.example .env
 npm run dev
 ```
 
-<<<<<<< HEAD
-##Docker Setup
-=======
-## Docker Setup
->>>>>>> 070b50431153079ba2be70f34a8820e83c870654
-Run the entire platform with a single command:
+Frontend URL: `http://localhost:5173`
+
+## Demo Accounts
+
+- Teacher: `teacher@quizplatform.com` / `Teacher@123`
+- Student: `student@quizplatform.com` / `Student@123`
+
+These accounts are auto-created/updated on backend startup for local testing.
+
+## Docker (Optional)
+
 ```bash
 docker-compose up --build
 ```
-
-<<< Default Accounts (for testing)
-=======
-## Default Accounts (for testing)
->>>>>>> 070b50431153079ba2be70f34a8820e83c870654
-- **Admin**: `admin@quizplatform.com` / `Admin@123`
-- **Teacher**: `teacher@quizplatform.com` / `Teacher@123`
-- **Student**: `student@quizplatform.com` / `Student@123`
-
-<<<<<<< HEAD
-##  Anti-Cheat Measures
-=======
-# Anti-Cheat Measures
->>>>>>> 070b50431153079ba2be70f34a8820e83c870654
-The platform includes:
-1. **Visibility Detection**: Detects if a student switches tabs or minimizes the window.
-2. **Warning System**: Logs violations and auto-submits after 3 warnings.
-3. **Fullscreen Encouragement**: Advised mode for secure attempts.
-<<<<<<< HEAD
-
-

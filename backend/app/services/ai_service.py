@@ -6,6 +6,10 @@ from app.core.config import settings
 from app.models.question import Question
 
 
+class AIServiceError(Exception):
+    pass
+
+
 class AIService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
@@ -39,6 +43,26 @@ class AIService:
         except json.JSONDecodeError:
             return []
 
+    def _generate_with_gemini(self, prompt: str) -> str:
+        client = self._get_client()
+        if not client:
+            raise AIServiceError("Gemini API key is missing or invalid. Update backend/.env and restart backend.")
+
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+        last_error = None
+        for model_name in models_to_try:
+            try:
+                response = client.models.generate_content(model=model_name, contents=prompt)
+                text = (response.text or "").strip()
+                if not text:
+                    raise AIServiceError(f"Gemini returned an empty response using {model_name}.")
+                return text
+            except Exception as e:
+                last_error = e
+                continue
+
+        raise AIServiceError(f"Gemini request failed: {last_error}")
+
     async def generate_questions(
         self,
         topic: str,
@@ -49,7 +73,6 @@ class AIService:
         teacher_id: int,
         db: Session,
     ) -> List[dict]:
-        client = self._get_client()
         prompt = f"""Generate {num_questions} multiple choice questions about "{topic}"{f' for subject {subject}' if subject else ''}.
 Difficulty level: {difficulty}
 
@@ -70,19 +93,10 @@ Return a JSON array with this exact structure:
 
 Only respond with the JSON array, no other text."""
 
-        questions_data = []
-        if client:
-            try:
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt
-                )
-                questions_data = self._parse_questions_from_response(response.text)
-            except Exception as e:
-                # Fall back to dummy questions
-                questions_data = self._generate_dummy_questions(topic, difficulty, num_questions)
-        else:
-            questions_data = self._generate_dummy_questions(topic, difficulty, num_questions)
+        response_text = self._generate_with_gemini(prompt)
+        questions_data = self._parse_questions_from_response(response_text)
+        if not questions_data:
+            raise AIServiceError("Gemini response was not valid JSON question data.")
 
         return self._save_questions_data(questions_data, num_questions, quiz_id, teacher_id, db, topic, subject, difficulty)
 
@@ -136,7 +150,6 @@ Only respond with the JSON array, no other text."""
         student_selected: str,
         student_answer_text: str,
     ) -> str:
-        client = self._get_client()
         prompt = f"""A student answered a quiz question incorrectly.
 
 Question: {question_text}
@@ -151,15 +164,10 @@ Please provide a clear, encouraging explanation in 2-3 sentences explaining:
 
 Keep it friendly and educational for a college student."""
 
-        if client:
-            try:
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt
-                )
-                return response.text.strip()
-            except Exception:
-                pass
+        try:
+            return self._generate_with_gemini(prompt)
+        except AIServiceError:
+            pass
         
         return (
             f"The correct answer is ({correct_option}) {correct_answer_text}. "
@@ -177,7 +185,6 @@ Keep it friendly and educational for a college student."""
         teacher_id: int,
         db: Session,
     ) -> List[dict]:
-        client = self._get_client()
         content_str = content if content else ""
         truncated_content = content_str[:4000]  # type: ignore # Gemini has token limits
         prompt = f"""Based on the following educational content, generate {num_questions} multiple choice questions.
@@ -204,18 +211,10 @@ Return a JSON array:
 
 Only respond with the JSON array."""
 
-        questions_data = []
-        if client:
-            try:
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt
-                )
-                questions_data = self._parse_questions_from_response(response.text)
-            except Exception:
-                questions_data = self._generate_dummy_questions(topic or "General", difficulty, num_questions)
-        else:
-            questions_data = self._generate_dummy_questions(topic or "General", difficulty, num_questions)
+        response_text = self._generate_with_gemini(prompt)
+        questions_data = self._parse_questions_from_response(response_text)
+        if not questions_data:
+            raise AIServiceError("Gemini response was not valid JSON question data.")
 
         return self._save_questions_data(
             questions_data=questions_data,
@@ -239,20 +238,3 @@ Only respond with the JSON array."""
             return text
         except Exception:
             return ""
-
-    def _generate_dummy_questions(self, topic: str, difficulty: str, num: int) -> List[dict]:
-        """Fallback questions when Gemini API key is not configured"""
-        return [
-            {
-                "text": f"Sample question {i + 1} about {topic}?",
-                "option_a": "First option",
-                "option_b": "Second option",
-                "option_c": "Third option (correct)",
-                "option_d": "Fourth option",
-                "correct_option": "c",
-                "explanation": f"This is the correct answer for question {i + 1}. Configure your GEMINI_API_KEY for real AI-generated questions.",
-                "difficulty": difficulty,
-                "topic": topic,
-            }
-            for i in range(num)
-        ]
