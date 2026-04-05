@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthProvider";
+import { useAuth } from "./context/useAuth";
+import { PlatformProvider } from "./context/PlatformProvider";
 
 // Core Pages
 import LandingPage from "./pages/LandingPage";
@@ -14,7 +16,9 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import CreateQuizPage from "./pages/teacher/CreateQuizPage";
 import QuestionBankPage from "./pages/teacher/QuestionBankPage";
+import TeacherAnalyticsOverview from "./pages/teacher/TeacherAnalyticsOverview";
 import TeacherAnalyticsPage from "./pages/teacher/TeacherAnalyticsPage";
+import TeacherStudentImportPage from "./pages/teacher/TeacherStudentImportPage";
 
 // Student pages
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -22,6 +26,8 @@ import QuizAttemptPage from "./pages/student/QuizAttemptPage";
 import ResultPage from "./pages/student/ResultPage";
 import StudentAnalyticsPage from "./pages/student/StudentAnalyticsPage";
 import LeaderboardPage from "./pages/student/LeaderboardPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
@@ -51,6 +57,7 @@ function ProtectedRoute({ children, roles }) {
 function RoleRedirect() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role === "admin") return <Navigate to="/admin" replace />;
   if (user.role === "teacher") return <Navigate to="/teacher" replace />;
   return <Navigate to="/student" replace />;
 }
@@ -87,9 +94,30 @@ function AnimatedRoutes() {
             <QuestionBankPage />
           </ProtectedRoute>
         } />
-        <Route path="/teacher/analytics/:quizId" element={
+        <Route path="/teacher/students/import" element={
+          <ProtectedRoute roles={["teacher"]}>
+            <TeacherStudentImportPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/analytics" element={
+          <ProtectedRoute roles={["teacher"]}>
+            <TeacherAnalyticsOverview />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/analytics/quiz/:quizId" element={
           <ProtectedRoute roles={["teacher"]}>
             <TeacherAnalyticsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/analytics" element={
+          <ProtectedRoute roles={["admin"]}>
+            <AdminAnalyticsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute roles={["admin"]}>
+            <AdminSettingsPage />
           </ProtectedRoute>
         } />
 
@@ -128,20 +156,22 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "var(--surface-color)",
-              color: "var(--text-primary)",
-              border: "1px solid var(--border-color)",
-              borderRadius: "1rem",
-              backdropFilter: "blur(10px)",
-              padding: "1rem 1.5rem"
-            },
-          }}
-        />
-        <AnimatedRoutes />
+        <PlatformProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: "var(--surface-color)",
+                color: "var(--text-primary)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "1rem",
+                backdropFilter: "blur(10px)",
+                padding: "1rem 1.5rem"
+              },
+            }}
+          />
+          <AnimatedRoutes />
+        </PlatformProvider>
       </BrowserRouter>
     </AuthProvider>
   );

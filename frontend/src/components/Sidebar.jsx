@@ -1,35 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { usePlatform } from "../context/PlatformContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Zap, LayoutDashboard, BookOpen, Database, BarChart2, Users,
-    LogOut, ChevronLeft, ChevronRight, Trophy, Settings, Shield,
-    ClipboardList, GraduationCap, Layout
+    Zap, LayoutDashboard, BookOpen, Database, BarChart2,
+    LogOut, ChevronLeft, ChevronRight, Trophy, Shield,
+    ClipboardList, UserPlus,
 } from "lucide-react";
 
 const NAV_BY_ROLE = {
+    admin: [
+        { label: "Platform analytics", icon: BarChart2, path: "/admin/analytics" },
+        { label: "Platform settings", icon: Shield, path: "/admin" },
+    ],
     teacher: [
+        { label: "Analytics", icon: BarChart2, path: "/teacher/analytics" },
         { label: "Overview", icon: LayoutDashboard, path: "/teacher" },
         { label: "Quiz Lab", icon: BookOpen, path: "/teacher/quiz/create" },
         { label: "Questions", icon: Database, path: "/teacher/questions" },
-        { label: "Analytics", icon: BarChart2, path: "/teacher/analytics" },
-    ],
-    student: [
-        { label: "Overview", icon: LayoutDashboard, path: "/student" },
-        { label: "Live Quizzes", icon: ClipboardList, path: "/student/quizzes" },
-        { label: "Leaderboard", icon: Trophy, path: "/student/leaderboard" },
-        { label: "My Stats", icon: BarChart2, path: "/student/analytics" },
+        { label: "Import students", icon: UserPlus, path: "/teacher/students/import" },
     ],
 };
 
+const STUDENT_NAV_BASE = [
+    { label: "Overview", icon: LayoutDashboard, path: "/student" },
+    { label: "Live Quizzes", icon: ClipboardList, path: "/student/quizzes" },
+    { label: "Leaderboard", icon: Trophy, path: "/student/leaderboard" },
+];
+const STUDENT_ANALYTICS_ITEM = { label: "My Stats", icon: BarChart2, path: "/student/analytics" };
+
 export default function Sidebar({ isOpen, setIsOpen }) {
     const { user, logout } = useAuth();
+    const { studentAnalyticsEnabled } = usePlatform();
     const location = useLocation();
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
 
-    const navItems = NAV_BY_ROLE[user?.role] || [];
+    let navItems = NAV_BY_ROLE[user?.role] || [];
+    if (user?.role === "student") {
+        navItems = [
+            ...STUDENT_NAV_BASE,
+            ...(studentAnalyticsEnabled ? [STUDENT_ANALYTICS_ITEM] : []),
+        ];
+    }
 
     const handleLogout = () => {
         logout();
@@ -37,6 +51,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     };
 
     const ROLE_THEME = {
+        admin: "text-brand-primary bg-brand-surface border-brand-primary/20",
         teacher: "text-brand-primary bg-brand-surface border-brand-primary/20",
         student: "text-brand-primary bg-brand-surface border-brand-primary/20",
     };
@@ -79,7 +94,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
                 <AnimatePresence>
                     {navItems.map(({ label, icon: Icon, path }) => {
-                        const isActive = location.pathname === path || (path !== "/" + user?.role && location.pathname.startsWith(path));
+                        const isActive =
+                            user?.role === "admin"
+                                ? location.pathname === path
+                                : location.pathname === path ||
+                                  (path !== "/" + user?.role && location.pathname.startsWith(path));
                         return (
                             <Link
                                 key={path}

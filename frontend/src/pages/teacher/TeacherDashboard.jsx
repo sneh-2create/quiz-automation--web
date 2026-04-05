@@ -180,7 +180,7 @@ export default function TeacherDashboard() {
                                             {quiz.is_published ? <Lock className="w-5 h-5" /> : <Globe className="w-5 h-5" />}
                                         </button>
                                         <Link
-                                            to={`/teacher/analytics/${quiz.id}`}
+                                            to={`/teacher/analytics/quiz/${quiz.id}`}
                                             title="View Analytics"
                                             className="bg-surface-color py-5 flex items-center justify-center text-text-secondary hover:text-brand-secondary hover:bg-brand-secondary/5 transition-all duration-300"
                                         >

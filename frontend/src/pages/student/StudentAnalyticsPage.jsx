@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import DashboardLayout from "../../components/DashboardLayout";
+import { usePlatform } from "../../context/PlatformContext";
 import { analyticsAPI } from "../../api/client";
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -13,12 +15,18 @@ const PERF_COLORS = {
 };
 
 export default function StudentAnalyticsPage() {
+    const { studentAnalyticsEnabled } = usePlatform();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!studentAnalyticsEnabled) return;
         analyticsAPI.studentMe().then(r => setData(r.data)).finally(() => setLoading(false));
-    }, []);
+    }, [studentAnalyticsEnabled]);
+
+    if (!studentAnalyticsEnabled) {
+        return <Navigate to="/student" replace />;
+    }
 
     if (loading) return (
         <DashboardLayout>

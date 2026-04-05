@@ -137,6 +137,12 @@ export default function QuizAttemptPage() {
     const currentQ = questions[currentIdx];
     const selectedOption = answers[currentQ?.id];
     const currentFeedback = feedback[currentQ?.id];
+    /** API only includes correct_option when student analytics (instant feedback) is enabled. */
+    const revealCorrect = Boolean(
+        currentFeedback &&
+            typeof currentFeedback.correct_option === "string" &&
+            currentFeedback.correct_option.length > 0
+    );
     const answeredCount = Object.keys(answers).length;
     const progress = (answeredCount / questions.length) * 100;
     const urgentTime = timeLeft !== null && timeLeft < 60;
@@ -233,25 +239,38 @@ export default function QuizAttemptPage() {
                                         const optText = currentQ[`option_${opt}`];
                                         if (!optText) return null;
                                         const isSelected = selectedOption === opt;
-                                        const isCorrectOpt = currentFeedback && opt === currentFeedback.correct_option.toLowerCase();
-                                        
+                                        const co = revealCorrect ? String(currentFeedback.correct_option).toLowerCase() : "";
+                                        const isCorrectOpt = revealCorrect && opt === co;
+
                                         let btnClass = `flex items-center p-5 rounded-md border text-left transition-all duration-300 relative overflow-hidden group/opt `;
                                         let iconClass = `w-10 h-10 rounded-md flex items-center justify-center font-bold text-sm mr-6 transition-all shrink-0 `;
                                         let textClass = `text-lg font-bold tracking-tight `;
 
                                         if (currentFeedback) {
-                                            if (isCorrectOpt) {
-                                                btnClass += "border-brand-primary bg-brand-primary/5";
-                                                iconClass += "bg-brand-primary text-white";
-                                                textClass += "text-brand-primary";
-                                            } else if (isSelected && !currentFeedback.is_correct) {
-                                                btnClass += "border-red-500 bg-red-500/5";
-                                                iconClass += "bg-red-500 text-white";
-                                                textClass += "text-red-500";
+                                            if (revealCorrect) {
+                                                if (isCorrectOpt) {
+                                                    btnClass += "border-brand-primary bg-brand-primary/5";
+                                                    iconClass += "bg-brand-primary text-white";
+                                                    textClass += "text-brand-primary";
+                                                } else if (isSelected && !currentFeedback.is_correct) {
+                                                    btnClass += "border-red-500 bg-red-500/5";
+                                                    iconClass += "bg-red-500 text-white";
+                                                    textClass += "text-red-500";
+                                                } else {
+                                                    btnClass += "border-border-color bg-surface-color opacity-50";
+                                                    iconClass += "bg-light-bg dark:bg-dark-border text-text-secondary";
+                                                    textClass += "text-text-secondary";
+                                                }
                                             } else {
-                                                btnClass += "border-border-color bg-surface-color opacity-50";
-                                                iconClass += "bg-light-bg dark:bg-dark-border text-text-secondary";
-                                                textClass += "text-text-secondary";
+                                                if (isSelected) {
+                                                    btnClass += "border-brand-primary bg-brand-primary/5 shadow-sm";
+                                                    iconClass += "bg-brand-primary text-white";
+                                                    textClass += "text-brand-primary";
+                                                } else {
+                                                    btnClass += "border-border-color bg-surface-color opacity-50";
+                                                    iconClass += "bg-light-bg dark:bg-dark-border text-text-secondary";
+                                                    textClass += "text-text-secondary";
+                                                }
                                             }
                                         } else {
                                             if (isSelected) {
@@ -286,7 +305,7 @@ export default function QuizAttemptPage() {
                                 
                                 {/* Live Feedback Area */}
                                 <AnimatePresence>
-                                    {currentFeedback && (
+                                    {currentFeedback && revealCorrect && (
                                         <motion.div
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -307,6 +326,32 @@ export default function QuizAttemptPage() {
                                                     <button
                                                         onClick={() => goTo(currentIdx + 1)}
                                                         className={`px-6 py-3 rounded-md font-bold text-xs uppercase tracking-widest text-white transition-all shadow-md shrink-0 ${currentFeedback.is_correct ? 'bg-brand-primary hover:bg-brand-primary/90' : 'bg-red-500 hover:bg-red-500/90'}`}
+                                                    >
+                                                        Next Question →
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                    {currentFeedback && !revealCorrect && currentFeedback.saved && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-6 p-6 rounded-md border border-border-color bg-surface-color"
+                                        >
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div>
+                                                    <h4 className="text-lg font-bold text-text-primary mb-1">Answer recorded</h4>
+                                                    <p className="text-sm text-text-secondary">
+                                                        Correctness and explanations are hidden until you finish the quiz (admin turned off
+                                                        instant feedback / student analytics).
+                                                    </p>
+                                                </div>
+                                                {currentIdx < questions.length - 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => goTo(currentIdx + 1)}
+                                                        className="px-6 py-3 rounded-md font-bold text-xs uppercase tracking-widest text-white bg-brand-primary hover:bg-brand-primary/90 transition-all shadow-md shrink-0"
                                                     >
                                                         Next Question →
                                                     </button>

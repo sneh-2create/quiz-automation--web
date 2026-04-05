@@ -4,11 +4,12 @@ import DashboardLayout from "../../components/DashboardLayout";
 import StatCard from "../../components/StatCard";
 import { quizzesAPI, usersAPI, attemptsAPI } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import { usePlatform } from "../../context/PlatformContext";
 import { motion } from "framer-motion";
 import {
     BookOpen, Trophy, Zap, Star, Clock,
     CheckCircle, ArrowRight, TrendingUp, Calendar, AlertCircle, Flame,
-    Radio
+    Radio, IdCard, Hash, Building2, MapPin
 } from "lucide-react";
 
 const PERF_COLORS = {
@@ -27,6 +28,7 @@ const DIFF_COLORS = {
 
 export default function StudentDashboard() {
     const { user } = useAuth();
+    const { studentAnalyticsEnabled } = usePlatform();
     const [quizzes, setQuizzes] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
     const [history, setHistory] = useState([]);
@@ -103,6 +105,48 @@ export default function StudentDashboard() {
                         </div>
                     </div>
                 </motion.div>
+
+                <div className="rounded-2xl border border-border-color bg-gradient-to-r from-bg-color via-surface-color to-brand-primary/5 p-6 flex flex-col lg:flex-row lg:items-center gap-6">
+                    <div className="flex-1 space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-secondary">Your event identity</p>
+                        <div className="flex flex-wrap gap-4">
+                            <div className="flex items-center gap-2 min-w-[200px]">
+                                <IdCard className="w-5 h-5 text-brand-primary shrink-0" />
+                                <div>
+                                    <p className="text-[10px] font-bold text-text-secondary uppercase">Registration ID</p>
+                                    <p className="font-mono font-black text-text-primary text-lg">{user?.registration_id || "—"}</p>
+                                    <p className="text-[10px] text-text-secondary">Used to log in</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 min-w-[200px]">
+                                <Hash className="w-5 h-5 text-amber-500 shrink-0" />
+                                <div>
+                                    <p className="text-[10px] font-bold text-text-secondary uppercase">Participant code</p>
+                                    <p className="font-mono font-black text-amber-600 dark:text-amber-400 text-lg tracking-wider">
+                                        {user?.participant_code || "—"}
+                                    </p>
+                                    <p className="text-[10px] text-text-secondary">Desk check-in &amp; result sheets</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-4 text-sm text-text-secondary border-t lg:border-t-0 lg:border-l border-border-color pt-4 lg:pt-0 lg:pl-8">
+                        <div className="flex items-start gap-2 max-w-md">
+                            <Building2 className="w-4 h-4 mt-0.5 text-brand-secondary shrink-0" />
+                            <div>
+                                <p className="font-bold text-text-primary">{user?.institution_name || "Add institution in profile"}</p>
+                                <p className="text-xs flex items-center gap-1 mt-0.5">
+                                    <MapPin className="w-3 h-3" />
+                                    {[user?.state_region, user?.college_area].filter(Boolean).join(" · ") || "State / area — edit profile if missing"}
+                                </p>
+                                <p className="text-xs mt-1">Stream: <span className="font-semibold text-text-primary">{user?.stream || "—"}</span></p>
+                                {user?.competition_category && (
+                                    <p className="text-[10px] mt-1 font-semibold text-brand-primary">{user.competition_category}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -339,9 +383,11 @@ export default function StudentDashboard() {
                                             </div>
                                         </div>
                                     ))}
-                                    <Link to="/student/analytics" className="btn-secondary w-full py-3.5 text-xs">
-                                        View Full Analytics
-                                    </Link>
+                                    {studentAnalyticsEnabled && (
+                                        <Link to="/student/analytics" className="btn-secondary w-full py-3.5 text-xs">
+                                            View Full Analytics
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         )}

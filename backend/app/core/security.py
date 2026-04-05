@@ -4,8 +4,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
-# Switched to sha256_crypt for compatibility with Python 3.14 (bcrypt has issues on this version)
+# Support both: older DBs used bcrypt; new hashes prefer sha256_crypt (fewer Python 3.14 bcrypt edge cases).
+pwd_context = CryptContext(schemes=["sha256_crypt", "bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

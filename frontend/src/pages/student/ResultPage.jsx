@@ -8,6 +8,7 @@ import {
     Share2, RotateCcw, Home, BarChart3
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePlatform } from "../../context/PlatformContext";
 
 const CATEGORY_CONFIG = {
     "Smart": { color: "from-brand-primary to-brand-secondary", bg: "bg-brand-primary/5 border-brand-primary/20", text: "text-brand-primary" },
@@ -41,6 +42,7 @@ function ConfettiEffect({ active }) {
 }
 
 export default function ResultPage() {
+    const { studentAnalyticsEnabled } = usePlatform();
     const { attemptId } = useParams();
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -284,16 +286,18 @@ export default function ResultPage() {
                 </div>
 
                 {/* Action Hub */}
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className={`grid gap-6 ${studentAnalyticsEnabled ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
                     <Link to="/student" className="btn-secondary flex items-center justify-center gap-3 py-5 text-xs">
                         <Home className="w-4 h-4" /> Lab Center
                     </Link>
                     <Link to={`/student/quiz/${result.quiz_id}/attempt`} className="btn-secondary flex items-center justify-center gap-3 py-5 text-xs text-brand-secondary border-brand-secondary/30 hover:bg-brand-secondary/5">
                         <RotateCcw className="w-4 h-4" /> Reset Challenge
                     </Link>
-                    <Link to="/student/analytics" className="btn-primary flex items-center justify-center gap-3 py-5 text-xs shadow-soft">
-                        <BarChart3 className="w-4 h-4" /> Strategy Analytics
-                    </Link>
+                    {studentAnalyticsEnabled && (
+                        <Link to="/student/analytics" className="btn-primary flex items-center justify-center gap-3 py-5 text-xs shadow-soft">
+                            <BarChart3 className="w-4 h-4" /> Strategy Analytics
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

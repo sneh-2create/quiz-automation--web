@@ -32,6 +32,8 @@ frontend/dist/
 
 # Databases and runtime files
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 backend/*.db
@@ -39,3 +41,4 @@ backend/*.db
 # IDE/editor
 .vscode/
 .idea/
+.cursor/

@@ -16,6 +16,9 @@ class QuizCreate(BaseModel):
     randomize_options: bool = True
     pass_percentage: float = 40.0
     max_attempts: int = 1
+    # Pool: e.g. 100 AI questions → deliver first 30, last 30, or random 30 per attempt.
+    question_pool_mode: str = "all"  # all | first_n | last_n | random_n
+    questions_per_attempt: int = 0  # 0 = all questions in pool
 
 
 class QuizUpdate(BaseModel):
@@ -31,6 +34,9 @@ class QuizUpdate(BaseModel):
     randomize_options: Optional[bool] = None
     pass_percentage: Optional[float] = None
     is_published: Optional[bool] = None
+    max_attempts: Optional[int] = None
+    question_pool_mode: Optional[str] = None
+    questions_per_attempt: Optional[int] = None
 
 
 class QuizOut(BaseModel):
@@ -48,6 +54,8 @@ class QuizOut(BaseModel):
     randomize_options: bool
     pass_percentage: float
     max_attempts: int
+    question_pool_mode: str
+    questions_per_attempt: int
     teacher_id: int
     created_at: datetime
 
@@ -68,6 +76,8 @@ class QuestionCreate(BaseModel):
     subject: Optional[str] = None
     marks: float = 1.0
     quiz_id: Optional[int] = None
+    # If false (default), same normalized question text on the same quiz returns 409.
+    allow_duplicate: bool = False
 
 
 class QuestionUpdate(BaseModel):

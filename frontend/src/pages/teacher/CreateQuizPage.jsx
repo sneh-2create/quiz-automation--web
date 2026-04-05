@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/DashboardLayout";
 import { quizzesAPI, questionsAPI, aiAPI } from "../../api/client";
-import { Plus, Sparkles, Save, Trash2, Check, X, Upload, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Sparkles, Save, Trash2, Check, X, Upload, FileText, ChevronDown, ChevronUp, Globe, Library } from "lucide-react";
 import toast from "react-hot-toast";
 
 const STEPS = ["Quiz Info", "Add Questions", "Review & Publish"];
@@ -31,6 +31,9 @@ export default function CreateQuizPage() {
     const [quizForm, setQuizForm] = useState({
         title: "", description: "", subject: "", topic: "", duration_minutes: 30,
         difficulty: "medium", negative_marking: false, negative_marks_value: 0.25, pass_percentage: 40,
+        max_attempts: 1,
+        question_pool_mode: "all",
+        questions_per_attempt: 0,
     });
     const [questions, setQuestions] = useState([]);
     const [aiForm, setAiForm] = useState({ topic: "", difficulty: "medium", num_questions: 5 });
@@ -38,7 +41,9 @@ export default function CreateQuizPage() {
     const [aiGenerated, setAiGenerated] = useState([]);
     const [manualQ, setManualQ] = useState({ text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "a", explanation: "", difficulty: "medium", marks: 1 });
     const [showManual, setShowManual] = useState(false);
-    const [activeTab, setActiveTab] = useState("manual"); // manual | ai | pdf
+    const [activeTab, setActiveTab] = useState("manual"); // manual | bank | ai | pdf
+    const [bankQuestions, setBankQuestions] = useState([]);
+    const [bankLoading, setBankLoading] = useState(false);
 
     // Load existing quiz if editing
     useEffect(() => {
@@ -48,6 +53,16 @@ export default function CreateQuizPage() {
             setStep(1);
         }
     }, [quizId]);
+
+    useEffect(() => {
+        if (step !== 1 || !quiz?.id) return;
+        setBankLoading(true);
+        questionsAPI
+            .list({ bank_for_quiz_id: quiz.id, limit: 150 })
+            .then((r) => setBankQuestions(r.data || []))
+            .catch(() => setBankQuestions([]))
+            .finally(() => setBankLoading(false));
+    }, [step, quiz?.id]);
 
     const handleCreateQuiz = async () => {
         if (!quizForm.title.trim()) { toast.error("Quiz title is required"); return; }
@@ -66,16 +81,78 @@ export default function CreateQuizPage() {
         }
     };
 
+    const submitNewQuestion = async (payload, { isDuplicateOk = false } = {}) => {
+        const body = { ...payload, quiz_id: quiz.id, allow_duplicate: !!isDuplicateOk };
+        const r = await questionsAPI.create(body);
+        setQuestions((prev) => [...prev, r.data]);
+        return r;
+    };
+
     const handleAddManualQ = async () => {
         if (!manualQ.text.trim()) { toast.error("Question text is required"); return; }
         try {
-            const r = await questionsAPI.create({ ...manualQ, quiz_id: quiz.id });
-            setQuestions(prev => [...prev, r.data]);
+            await submitNewQuestion(manualQ, { isDuplicateOk: false });
             setManualQ({ text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "a", explanation: "", difficulty: "medium", marks: 1 });
             setShowManual(false);
             toast.success("Question added!");
         } catch (e) {
-            toast.error("Failed to add question");
+            const st = e.response?.status;
+            const code = e.response?.data?.detail?.code;
+            if (st === 409 && code === "duplicate_question_same_quiz") {
+                const ok = window.confirm(
+                    "This quiz already has the same question text. Add another copy anyway? (Useful when re-running the same class or reusing a set.)"
+                );
+                if (!ok) return;
+                try {
+                    await submitNewQuestion(manualQ, { isDuplicateOk: true });
+                    setManualQ({ text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "a", explanation: "", difficulty: "medium", marks: 1 });
+                    setShowManual(false);
+                    toast.success("Duplicate copy added.");
+                } catch (e2) {
+                    toast.error(e2.response?.data?.detail?.message || "Failed to add question");
+                }
+            } else {
+                toast.error(typeof e.response?.data?.detail === "string" ? e.response.data.detail : "Failed to add question");
+            }
+        }
+    };
+
+    const handleAddFromBank = async (bq) => {
+        const payload = {
+            text: bq.text,
+            option_a: bq.option_a,
+            option_b: bq.option_b,
+            option_c: bq.option_c,
+            option_d: bq.option_d,
+            correct_option: bq.correct_option,
+            explanation: bq.explanation || "",
+            difficulty: bq.difficulty || "medium",
+            topic: bq.topic || "",
+            subject: bq.subject || "",
+            marks: bq.marks ?? 1,
+        };
+        try {
+            await submitNewQuestion(payload, { isDuplicateOk: false });
+            toast.success("Question added from bank!");
+            questionsAPI.list({ quiz_id: quiz.id }).then((r) => setQuestions(r.data));
+        } catch (e) {
+            const st = e.response?.status;
+            const code = e.response?.data?.detail?.code;
+            if (st === 409 && code === "duplicate_question_same_quiz") {
+                const ok = window.confirm(
+                    "This exact wording is already on this quiz. Add a second copy from the bank anyway?"
+                );
+                if (!ok) return;
+                try {
+                    await submitNewQuestion(payload, { isDuplicateOk: true });
+                    toast.success("Duplicate copy added from bank.");
+                    questionsAPI.list({ quiz_id: quiz.id }).then((r) => setQuestions(r.data));
+                } catch (e2) {
+                    toast.error("Could not add from bank");
+                }
+            } else {
+                toast.error("Could not add from bank");
+            }
         }
     };
 
@@ -169,6 +246,31 @@ export default function CreateQuizPage() {
                                 <label className="label">Pass Percentage (%)</label>
                                 <input type="number" className="input" min="0" max="100" value={quizForm.pass_percentage} onChange={e => setQuizForm({ ...quizForm, pass_percentage: +e.target.value })} />
                             </div>
+                            <div>
+                                <label className="label">Max attempts per student</label>
+                                <input type="number" className="input" min="1" max="99" value={quizForm.max_attempts} onChange={e => setQuizForm({ ...quizForm, max_attempts: +e.target.value })} />
+                            </div>
+                            <div className="col-span-2 rounded-xl border border-border-color bg-bg-color/50 p-4 space-y-3">
+                                <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Question pool per attempt</p>
+                                <p className="text-xs text-text-secondary">
+                                    Add many questions (e.g. 100 from AI), then choose how many each student sees: first 30, last 30, or random 30. Each new attempt can draw a different subset when using random. Turn on &quot;Shuffle question order&quot; below to randomize display order.
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="label">Selection mode</label>
+                                        <select className="input" value={quizForm.question_pool_mode} onChange={e => setQuizForm({ ...quizForm, question_pool_mode: e.target.value })}>
+                                            <option value="all">All approved questions</option>
+                                            <option value="first_n">First N (by question order)</option>
+                                            <option value="last_n">Last N (by question order)</option>
+                                            <option value="random_n">Random N each attempt</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="label">N questions (0 = all)</label>
+                                        <input type="number" className="input" min="0" max="500" value={quizForm.questions_per_attempt} onChange={e => setQuizForm({ ...quizForm, questions_per_attempt: +e.target.value })} />
+                                    </div>
+                                </div>
+                            </div>
                             <div className="flex items-center gap-3 col-span-2">
                                 <input type="checkbox" id="neg" className="w-4 h-4 accent-brand-primary" checked={quizForm.negative_marking} onChange={e => setQuizForm({ ...quizForm, negative_marking: e.target.checked })} />
                                 <label htmlFor="neg" className="text-sm text-text-secondary cursor-pointer">Enable Negative Marking (-{quizForm.negative_marks_value} per wrong)</label>
@@ -189,7 +291,7 @@ export default function CreateQuizPage() {
                     <div className="space-y-5">
                         <div className="card">
                             <div className="flex gap-1 mb-4 p-1 bg-gray-800/50 rounded-xl">
-                                {[{ id: "manual", label: "Manual", icon: Plus }, { id: "ai", label: "AI Generate", icon: Sparkles }, { id: "pdf", label: "From PDF", icon: FileText }].map(tab => (
+                                {[{ id: "manual", label: "Manual", icon: Plus }, { id: "bank", label: "Question bank", icon: Library }, { id: "ai", label: "AI Generate", icon: Sparkles }, { id: "pdf", label: "From PDF", icon: FileText }].map(tab => (
                                     <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === tab.id ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white" : "text-gray-500 hover:text-gray-300"}`}>
                                         <tab.icon className="w-3.5 h-3.5" />{tab.label}
@@ -225,6 +327,45 @@ export default function CreateQuizPage() {
                                             </div>
                                             <button onClick={handleAddManualQ} className="btn-success w-full"><Plus className="w-4 h-4 inline mr-1" />Add Question</button>
                                         </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === "bank" && (
+                                <div className="space-y-4">
+                                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-4 text-sm text-amber-200/90">
+                                        <Library className="w-4 h-4 inline mr-2" />
+                                        Questions from your other quizzes (or unassigned). Adding the same text twice is
+                                        blocked unless you confirm — so you control repeats for the next class.
+                                    </div>
+                                    {bankLoading ? (
+                                        <p className="text-sm text-text-secondary text-center py-6">Loading bank…</p>
+                                    ) : bankQuestions.length === 0 ? (
+                                        <p className="text-sm text-text-secondary text-center py-6">
+                                            No other questions in your bank yet. Create another quiz or add manual questions elsewhere first.
+                                        </p>
+                                    ) : (
+                                        <ul className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                                            {bankQuestions.map((bq) => (
+                                                <li
+                                                    key={`${bq.id}-${bq.quiz_id}`}
+                                                    className="rounded-xl border border-border-color bg-bg-color/40 p-3 flex flex-col gap-2"
+                                                >
+                                                    <p className="text-sm text-text-primary font-medium line-clamp-3">{bq.text}</p>
+                                                    <div className="flex flex-wrap gap-2 text-[10px] text-text-secondary">
+                                                        <span className="badge badge-blue">{bq.difficulty}</span>
+                                                        {bq.topic && <span className="opacity-80">{bq.topic}</span>}
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddFromBank(bq)}
+                                                        className="btn-secondary text-xs py-2 w-full sm:w-auto sm:self-start"
+                                                    >
+                                                        Add to this quiz
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     )}
                                 </div>
                             )}
@@ -360,6 +501,3 @@ export default function CreateQuizPage() {
         </DashboardLayout>
     );
 }
-
-// Need this import in the file too
-import { Globe } from "lucide-react";

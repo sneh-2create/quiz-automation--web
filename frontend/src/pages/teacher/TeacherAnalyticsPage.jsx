@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/DashboardLayout";
 import { analyticsAPI } from "../../api/client";
 import {
@@ -9,6 +9,7 @@ import {
 import { Trophy, Target, Users, TrendingUp } from "lucide-react";
 
 const COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444"];
+const PIE_COLORS = ["#6366f1", "#a855f7", "#22c55e", "#eab308", "#f97316"];
 
 export default function TeacherAnalyticsPage() {
     const { quizId } = useParams();
@@ -30,6 +31,12 @@ export default function TeacherAnalyticsPage() {
     );
 
     const distData = Object.entries(data.score_distribution || {}).map(([range, count]) => ({ range, count }));
+    const distPie = distData.filter((d) => d.count > 0).map((d) => ({ name: d.range, value: d.count }));
+    const ao = data.answer_outcomes || { correct: 0, incorrect: 0 };
+    const answerPie = [
+        { name: "Correct", value: ao.correct },
+        { name: "Incorrect", value: ao.incorrect },
+    ].filter((d) => d.value > 0);
     const qSuccessData = (data.question_stats || []).slice(0, 10).map(q => ({
         name: q.question_text?.slice(0, 20) + "…",
         rate: q.success_rate,
@@ -38,7 +45,12 @@ export default function TeacherAnalyticsPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6 animate-slide-up">
-                <h2 className="text-xl font-bold text-text-primary">{data.quiz_title} — Analytics</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h2 className="text-xl font-bold text-text-primary">{data.quiz_title} — Analytics</h2>
+                    <Link to="/teacher/analytics" className="text-sm font-bold text-brand-primary hover:underline">
+                        ← All analytics (streams & areas)
+                    </Link>
+                </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -60,10 +72,74 @@ export default function TeacherAnalyticsPage() {
                     ))}
                 </div>
 
+                {(distPie.length > 0 || answerPie.length > 0) && (
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="card">
+                            <h3 className="font-semibold text-text-primary mb-2">Score bands (pie)</h3>
+                            <p className="text-xs text-text-secondary mb-3">Share of attempts in each range</p>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <PieChart>
+                                    <Pie
+                                        data={distPie}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={50}
+                                        outerRadius={85}
+                                        paddingAngle={2}
+                                    >
+                                        {distPie.map((_, i) => (
+                                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="var(--surface-color)" strokeWidth={2} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: "var(--surface-color)",
+                                            border: "1px solid var(--border-color)",
+                                            borderRadius: "8px",
+                                            color: "var(--text-primary)",
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="card">
+                            <h3 className="font-semibold text-text-primary mb-2">Responses (pie)</h3>
+                            <p className="text-xs text-text-secondary mb-3">Correct vs incorrect across all questions</p>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <PieChart>
+                                    <Pie
+                                        data={answerPie}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={50}
+                                        outerRadius={85}
+                                        paddingAngle={2}
+                                    >
+                                        <Cell fill="#22c55e" stroke="var(--surface-color)" strokeWidth={2} />
+                                        <Cell fill="#ef4444" stroke="var(--surface-color)" strokeWidth={2} />
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: "var(--surface-color)",
+                                            border: "1px solid var(--border-color)",
+                                            borderRadius: "8px",
+                                            color: "var(--text-primary)",
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Score Distribution */}
                     <div className="card">
-                        <h3 className="font-semibold text-text-primary mb-4">Score Distribution</h3>
+                        <h3 className="font-semibold text-text-primary mb-4">Score Distribution (bars)</h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={distData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -107,8 +183,12 @@ export default function TeacherAnalyticsPage() {
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${s.rank === 1 ? "bg-yellow-500 text-black" : s.rank === 2 ? "bg-gray-300 text-black" : s.rank === 3 ? "bg-amber-700 text-white" : "bg-bg-color text-text-secondary border border-border-color"}`}>
                                     {s.rank}
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                     <p className="font-medium text-text-primary text-sm">{s.student_name}</p>
+                                    <p className="text-xs text-text-secondary truncate">
+                                        {[s.stream, s.college_area].filter(Boolean).join(" · ") || "—"}
+                                        {s.registration_id ? ` · ID ${s.registration_id}` : ""}
+                                    </p>
                                     <p className="text-xs text-text-secondary">Time: {Math.round((s.time_taken_seconds || 0) / 60)}m {(s.time_taken_seconds || 0) % 60}s</p>
                                 </div>
                                 <div className="text-right">

@@ -1,12 +1,25 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { Zap, User, Mail, Lock, GraduationCap, BookOpen, ArrowLeft, AlertCircle } from "lucide-react";
+import { useAuth } from "../../context/useAuth";
+import { Zap, User, Mail, Lock, GraduationCap, BookOpen, ArrowLeft, UserRound, Phone, MapPin, BookMarked, IdCard, Building2, Flag, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
-    const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "student" });
+    const [form, setForm] = useState({
+        full_name: "",
+        email: "",
+        registration_id: "",
+        password: "",
+        role: "student",
+        father_name: "",
+        college_area: "",
+        state_region: "",
+        institution_name: "",
+        competition_category: "",
+        stream: "",
+        mobile_no: "",
+    });
     const [loading, setLoading] = useState(false);
     const { register } = useAuth();
     const navigate = useNavigate();
@@ -16,7 +29,29 @@ export default function RegisterPage() {
         if (form.password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
         setLoading(true);
         try {
-            await register(form);
+            const payload =
+                form.role === "student"
+                    ? {
+                          full_name: form.full_name,
+                          email: form.email,
+                          password: form.password,
+                          role: "student",
+                          registration_id: form.registration_id,
+                          father_name: form.father_name,
+                          college_area: form.college_area,
+                          state_region: form.state_region || undefined,
+                          institution_name: form.institution_name || undefined,
+                          competition_category: form.competition_category || undefined,
+                          stream: form.stream,
+                          mobile_no: form.mobile_no,
+                      }
+                    : {
+                          full_name: form.full_name,
+                          email: form.email,
+                          password: form.password,
+                          role: "teacher",
+                      };
+            await register(payload);
             toast.success(
                 form.role === "teacher"
                     ? "Welcome, Teacher! Your account is ready. 🎓"
@@ -24,7 +59,21 @@ export default function RegisterPage() {
             );
             navigate("/login");
         } catch (err) {
-            toast.error(err.response?.data?.detail || "Registration failed.");
+            if (!err.response) {
+                toast.error(
+                    err.message?.includes("fetch") || err.message?.includes("Network")
+                        ? "Cannot reach the API. Start the backend on port 8000 (see login page) or run `npm run dev` from the project root."
+                        : err.message || "Registration failed — check your connection."
+                );
+            } else {
+                const d = err.response?.data?.detail;
+                const msg = Array.isArray(d)
+                    ? d.map((x) => x.msg || JSON.stringify(x)).join(" · ")
+                    : typeof d === "string"
+                      ? d
+                      : "Registration failed.";
+                toast.error(msg);
+            }
         } finally {
             setLoading(false);
         }
@@ -138,20 +187,162 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Email Address</label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
-                                <input
-                                    type="email"
-                                    className="input pl-12"
-                                    placeholder="john@example.com"
-                                    value={form.email}
-                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                    required
-                                />
+                        {form.role === "teacher" && (
+                            <div className="space-y-1">
+                                <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Email Address</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                    <input
+                                        type="email"
+                                        className="input pl-12"
+                                        placeholder="john@example.com"
+                                        value={form.email}
+                                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {form.role === "student" && (
+                            <>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Email address</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="email"
+                                            className="input pl-12"
+                                            placeholder="Your real email (stored for the event)"
+                                            value={form.email}
+                                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                            required={form.role === "student"}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-text-secondary pl-1">
+                                        Used for your account and optional sign-in. We do not show internal placeholder emails on your profile.
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">College registration ID</label>
+                                    <div className="relative">
+                                        <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="As issued by your college (used to sign in)"
+                                            value={form.registration_id}
+                                            onChange={(e) => setForm({ ...form, registration_id: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-text-secondary pl-1">
+                                        Sign in with this ID + password. After signup you also get a short{" "}
+                                        <span className="font-bold text-brand-primary">participant code</span> for
+                                        check-in at events (shown on your dashboard).
+                                    </p>
+                                </div>
+                                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest pl-1">Student profile (required)</p>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Father&apos;s name</label>
+                                    <div className="relative">
+                                        <UserRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="Parent / guardian name"
+                                            value={form.father_name}
+                                            onChange={(e) => setForm({ ...form, father_name: e.target.value })}
+                                            required={form.role === "student"}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">College area</label>
+                                    <div className="relative">
+                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="City or campus area"
+                                            value={form.college_area}
+                                            onChange={(e) => setForm({ ...form, college_area: e.target.value })}
+                                            required={form.role === "student"}
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest pl-1">
+                                    Event analytics (strongly recommended for PIET / multi-college quizzes)
+                                </p>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">State / UT</label>
+                                    <div className="relative">
+                                        <Flag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="e.g. Haryana, Karnataka"
+                                            value={form.state_region}
+                                            onChange={(e) => setForm({ ...form, state_region: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">College / school name</label>
+                                    <div className="relative">
+                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="Full institution name as on ID card"
+                                            value={form.institution_name}
+                                            onChange={(e) => setForm({ ...form, institution_name: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Competition category</label>
+                                    <div className="relative">
+                                        <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="e.g. UG — CSE, Diploma, School senior"
+                                            value={form.competition_category}
+                                            onChange={(e) => setForm({ ...form, competition_category: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Stream</label>
+                                    <div className="relative">
+                                        <BookMarked className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            className="input pl-12"
+                                            placeholder="e.g. MCA, B.Tech CSE"
+                                            value={form.stream}
+                                            onChange={(e) => setForm({ ...form, stream: e.target.value })}
+                                            required={form.role === "student"}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Mobile number</label>
+                                    <div className="relative">
+                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="tel"
+                                            className="input pl-12"
+                                            placeholder="10-digit mobile"
+                                            value={form.mobile_no}
+                                            onChange={(e) => setForm({ ...form, mobile_no: e.target.value })}
+                                            required={form.role === "student"}
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         <div className="space-y-1">
                             <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">Password</label>

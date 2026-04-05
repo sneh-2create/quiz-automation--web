@@ -3,7 +3,7 @@ import httpx
 import time
 import random
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/api"
 NUM_USERS = 100
 
 async def simulate_user(user_id):
@@ -11,11 +11,17 @@ async def simulate_user(user_id):
         # 1. Register
         email = f"student_load_test_{user_id}@example.com"
         password = "Password123"
+        reg_id = f"LOAD{user_id:05d}"
         reg_data = {
             "email": email,
             "full_name": f"Load Test User {user_id}",
             "password": password,
-            "role": "student"
+            "role": "student",
+            "registration_id": reg_id,
+            "father_name": "Parent",
+            "college_area": "Test City",
+            "stream": "CSE",
+            "mobile_no": f"90000{user_id % 100000:05d}",
         }
         try:
             r = await client.post("/auth/register", json=reg_data)
@@ -25,7 +31,10 @@ async def simulate_user(user_id):
         # 2. Login
         start_time = time.time()
         try:
-            r = await client.post("/auth/login", data={"username": email, "password": password})
+            r = await client.post(
+                "/auth/login",
+                data={"username": email, "password": password, "portal": "student"},
+            )
             if r.status_code != 200:
                 return False, 0
             

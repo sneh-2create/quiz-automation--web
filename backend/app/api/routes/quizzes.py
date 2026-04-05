@@ -6,6 +6,7 @@ from app.models.quiz import Quiz
 from app.models.user import User
 from app.schemas.quiz import QuizCreate, QuizUpdate, QuizOut
 from app.core.dependencies import get_current_user, get_teacher
+from app.core.role_utils import role_str
 
 router = APIRouter(prefix="/quizzes", tags=["Quizzes"])
 
@@ -30,13 +31,13 @@ def list_quizzes(
     current_user: User = Depends(get_current_user),
 ):
     q = db.query(Quiz)
-    if published_only or current_user.role == "student":
+    if published_only or role_str(current_user) == "student":
         q = q.filter(Quiz.is_published == True)
     if subject:
         q = q.filter(Quiz.subject.ilike(f"%{subject}%"))
     if teacher_id:
         q = q.filter(Quiz.teacher_id == teacher_id)
-    elif current_user.role == "teacher":
+    elif role_str(current_user) == "teacher":
         q = q.filter(Quiz.teacher_id == current_user.id)
     return q.offset(skip).limit(limit).all()
 
@@ -46,7 +47,7 @@ def get_quiz(quiz_id: int, db: Session = Depends(get_db), current_user: User = D
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-    if current_user.role == "student" and not quiz.is_published:
+    if role_str(current_user) == "student" and not quiz.is_published:
         raise HTTPException(status_code=403, detail="Quiz not published")
     return quiz
 

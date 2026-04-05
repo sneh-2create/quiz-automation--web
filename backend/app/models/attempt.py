@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Text, Index
 from app.db.database import Base
 
 
@@ -12,6 +12,7 @@ class AttemptStatus(str, enum.Enum):
 
 class QuizAttempt(Base):
     __tablename__ = "quiz_attempts"
+    __table_args__ = (Index("ix_quiz_attempts_student_quiz", "student_id", "quiz_id"),)
 
     id = Column(Integer, primary_key=True, index=True)
     quiz_id = Column(Integer, ForeignKey("quizzes.id"), nullable=False)
@@ -26,6 +27,8 @@ class QuizAttempt(Base):
     time_taken_seconds = Column(Integer, nullable=True)
     started_at = Column(DateTime, default=datetime.utcnow)
     submitted_at = Column(DateTime, nullable=True)
+    # JSON list of question IDs for this attempt (per-student subset from pool).
+    assigned_question_ids = Column(Text, nullable=True)
 
 
 class AttemptAnswer(Base):

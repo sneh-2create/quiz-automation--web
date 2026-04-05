@@ -5,6 +5,7 @@ uvicorn[standard]
 # ── Database ──────────────────────────────────────────────────────────────────
 sqlalchemy
 alembic
+psycopg2-binary
 
 # ── Validation / Settings ────────────────────────────────────────────────────
 pydantic

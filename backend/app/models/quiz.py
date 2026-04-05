@@ -28,6 +28,10 @@ class Quiz(Base):
     randomize_options = Column(Boolean, default=True)
     pass_percentage = Column(Float, default=40.0)
     max_attempts = Column(Integer, default=1)
+    # From a large bank (e.g. 100 AI questions), how many to deliver per attempt.
+    # Modes: all | first_n | last_n | random_n — paired with questions_per_attempt (e.g. 30).
+    question_pool_mode = Column(String, default="all", nullable=False)
+    questions_per_attempt = Column(Integer, default=0, nullable=False)  # 0 = use all in pool
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

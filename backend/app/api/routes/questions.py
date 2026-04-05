@@ -1,20 +1,51 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import io
 import pandas as pd
 from app.db.database import get_db
 from app.models.question import Question
+from app.models.quiz import Quiz
 from app.models.user import User
 from app.schemas.quiz import QuestionCreate, QuestionUpdate, QuestionOut
-from app.core.dependencies import get_current_user, get_teacher
+from app.core.dependencies import get_current_user, get_teacher, get_teacher_or_admin
+from app.core.role_utils import role_str
 
 router = APIRouter(prefix="/questions", tags=["Questions"])
 
 
+def _normalize_question_text(t: str) -> str:
+    return " ".join((t or "").strip().lower().split())
+
+
 @router.post("/", response_model=QuestionOut)
-def create_question(data: QuestionCreate, db: Session = Depends(get_db), teacher: User = Depends(get_teacher)):
-    q = Question(**data.model_dump(), created_by=teacher.id, is_ai_generated=False)
+def create_question(data: QuestionCreate, db: Session = Depends(get_db), user: User = Depends(get_teacher_or_admin)):
+    payload = data.model_dump(exclude={"allow_duplicate"})
+    allow_dup = data.allow_duplicate
+    if not payload.get("quiz_id"):
+        raise HTTPException(status_code=400, detail="quiz_id is required")
+    quiz = db.query(Quiz).filter(Quiz.id == payload["quiz_id"]).first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    r = role_str(user)
+    if r == "teacher" and quiz.teacher_id != user.id:
+        raise HTTPException(status_code=403, detail="Not your quiz")
+    created_by_id = quiz.teacher_id
+
+    if not allow_dup:
+        nt = _normalize_question_text(payload["text"])
+        existing = db.query(Question).filter(Question.quiz_id == payload["quiz_id"]).all()
+        if any(_normalize_question_text(x.text) == nt for x in existing):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "duplicate_question_same_quiz",
+                    "message": "This quiz already contains the same question text. Retry with allow_duplicate: true if you want another copy.",
+                },
+            )
+
+    q = Question(**payload, created_by=created_by_id, is_ai_generated=False)
     db.add(q)
     db.commit()
     db.refresh(q)
@@ -24,6 +55,10 @@ def create_question(data: QuestionCreate, db: Session = Depends(get_db), teacher
 @router.get("/", response_model=List[QuestionOut])
 def list_questions(
     quiz_id: Optional[int] = Query(None),
+    bank_for_quiz_id: Optional[int] = Query(
+        None,
+        description="Questions from the same teacher, excluding this quiz (for re-use / question bank).",
+    ),
     topic: Optional[str] = Query(None),
     difficulty: Optional[str] = Query(None),
     subject: Optional[str] = Query(None),
@@ -34,6 +69,20 @@ def list_questions(
     current_user: User = Depends(get_current_user),
 ):
     q = db.query(Question)
+    if bank_for_quiz_id is not None:
+        bq = db.query(Quiz).filter(Quiz.id == bank_for_quiz_id).first()
+        if not bq:
+            raise HTTPException(status_code=404, detail="Quiz not found for bank")
+        r = role_str(current_user)
+        if r == "teacher" and bq.teacher_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not your quiz")
+        if r == "student":
+            raise HTTPException(status_code=403, detail="Access denied")
+        tid = bq.teacher_id
+        q = q.filter(
+            Question.created_by == tid,
+            or_(Question.quiz_id != bank_for_quiz_id, Question.quiz_id.is_(None)),
+        )
     if quiz_id:
         q = q.filter(Question.quiz_id == quiz_id)
     if topic:

@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: quiz
+      POSTGRES_PASSWORD: quizsecret
+      POSTGRES_DB: quiz
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quiz -d quiz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
     ports:
@@ -8,8 +24,13 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - DATABASE_URL=sqlite:///./quiz_platform.db
-    command: uvicorn main:app --host 0.0.0.1 --port 8000 --reload
+      # Override in backend/.env for production. Default here = Postgres for multi-user / ~1500 tester loads.
+      DATABASE_URL: postgresql+psycopg2://quiz:quizsecret@db:5432/quiz
+      DISABLE_DEMO_SEED: "true"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
@@ -22,4 +43,9 @@ services:
       - ./frontend/.env
     environment:
       - VITE_API_URL=http://localhost:8000/api
+      # Set to true for live events to hide demo login shortcuts
+      - VITE_HIDE_DEMO_LOGIN=true
     command: npm run dev -- --host
+
+volumes:
+  pgdata:
