@@ -45,33 +45,60 @@ def run_sqlite_migrations(engine: Engine) -> None:
                 """
             )
         )
+
         ps_cols = _cols(conn, "platform_settings")
+
         if "allow_quiz_retakes" not in ps_cols:
-            conn.execute(text("ALTER TABLE platform_settings ADD COLUMN allow_quiz_retakes INTEGER NOT NULL DEFAULT 0"))
+            conn.execute(
+                text(
+                    "ALTER TABLE platform_settings ADD COLUMN allow_quiz_retakes INTEGER NOT NULL DEFAULT 0"
+                )
+            )
+
         for col, default in (
             ("analytics_rank_tier_1", "3"),
             ("analytics_rank_tier_2", "10"),
             ("analytics_rank_tier_3", "20"),
         ):
             if col not in ps_cols:
-                conn.execute(text(f"ALTER TABLE platform_settings ADD COLUMN {col} INTEGER NOT NULL DEFAULT {default}"))
+                conn.execute(
+                    text(
+                        f"ALTER TABLE platform_settings ADD COLUMN {col} INTEGER NOT NULL DEFAULT {default}"
+                    )
+                )
                 ps_cols.add(col)
-        row = conn.execute(text("SELECT id FROM platform_settings WHERE id = 1")).fetchone()
+
+        # ✅ IMPORTANT: row must be OUTSIDE loop
+        row = conn.execute(
+            text("SELECT id FROM platform_settings WHERE id = 1")
+        ).fetchone()
+
         if not row:
             conn.execute(
                 text(
-                    "INSERT INTO platform_settings (id, student_analytics_enabled, allow_quiz_retakes) VALUES (1, 1, 0)"
+                    """
+                    INSERT INTO platform_settings (
+                        id,
+                        student_analytics_enabled,
+                        allow_quiz_retakes,
+                        analytics_rank_tier_1,
+                        analytics_rank_tier_2,
+                        analytics_rank_tier_3
+                    ) VALUES (1, 1, 0, 3, 10, 20)
+                    """
                 )
             )
 
         # --- quizzes ---
         q_cols = _cols(conn, "quizzes")
+
         if "question_pool_mode" not in q_cols:
             conn.execute(
                 text(
                     "ALTER TABLE quizzes ADD COLUMN question_pool_mode VARCHAR NOT NULL DEFAULT 'all'"
                 )
             )
+
         if "questions_per_attempt" not in q_cols:
             conn.execute(
                 text(
@@ -81,5 +108,10 @@ def run_sqlite_migrations(engine: Engine) -> None:
 
         # --- quiz_attempts ---
         a_cols = _cols(conn, "quiz_attempts")
+
         if "assigned_question_ids" not in a_cols:
-            conn.execute(text("ALTER TABLE quiz_attempts ADD COLUMN assigned_question_ids TEXT"))
+            conn.execute(
+                text(
+                    "ALTER TABLE quiz_attempts ADD COLUMN assigned_question_ids TEXT"
+                )
+            )
