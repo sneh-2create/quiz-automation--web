@@ -11,13 +11,13 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 ai_service = AIService()
 
 
+# In ai.py, temporarily change your generate_questions route:
 @router.post("/generate-questions")
 async def generate_questions(
     data: AIGenerateRequest,
     db: Session = Depends(get_db),
     teacher: User = Depends(get_teacher),
 ):
-    """Generate MCQ questions using Gemini AI"""
     try:
         questions = await ai_service.generate_questions(
             topic=data.topic,
@@ -30,6 +30,10 @@ async def generate_questions(
         )
     except AIServiceError as e:
         raise HTTPException(status_code=502, detail=str(e))
+    except Exception as e:                          # ← ADD THIS
+        import traceback
+        traceback.print_exc()                       # prints full trace in terminal
+        raise HTTPException(status_code=500, detail=f"Unexpected: {str(e)}")
     return {"generated": len(questions), "questions": questions}
 
 
