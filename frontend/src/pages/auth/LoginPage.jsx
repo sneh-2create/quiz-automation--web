@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { getApiBaseUrl } from "../../api/client";
-import { Zap, UserRound, Lock, Eye, EyeOff, Github, Chrome, ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Zap, UserRound, Lock, Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -148,10 +148,9 @@ export default function LoginPage() {
                     <div className="mb-10">
                         <h1 className="text-4xl font-bold text-text-primary mb-2 tracking-tight">Welcome Back</h1>
                         <p className="text-text-secondary font-medium">
-                            Use the <strong>Student</strong> or <strong>Teacher / Admin</strong> tab so accounts only open in the correct area
-                            (staff cannot use the student screen, and students cannot use the staff screen).
+                            Sign in with your account. Students and staff must use the matching tab below.
                         </p>
-                        {apiReachable === false && (
+                        {import.meta.env.DEV && apiReachable === false && (
                             <div className="mt-4 p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-sm text-text-primary flex gap-3 items-start">
                                 <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                                 <div className="space-y-2">
@@ -184,29 +183,12 @@ export default function LoginPage() {
                                         <code className="text-[10px] bg-border-color/50 px-1 rounded">uvicorn main:app --reload --host 0.0.0.0 --port 8000</code>
                                     </p>
                                     <p className="text-[11px] text-text-secondary">
-                                        Use the exact URL Vite prints (often <strong>5174</strong> if 5173 is busy).                                         Student demo: <strong>REG2026DEMO</strong> / Student@123 on the Student tab.
+                                        Start the app from the project root: <code className="text-[10px] bg-border-color/50 px-1 rounded">npm run dev</code>
                                     </p>
                                 </div>
                             </div>
                         )}
-                        {apiReachable === true && (
-                            <div className="mt-4 p-3 rounded-xl border border-green-500/30 bg-green-500/10 text-xs text-text-secondary flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-                                API is reachable — you can sign in (demo shortcuts appear below when enabled).
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Social Login */}
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <button className="btn-secondary py-3 flex items-center justify-center gap-2">
-                            <Chrome className="w-5 h-5" />
-                            <span className="text-sm">Google</span>
-                        </button>
-                        <button className="btn-secondary py-3 flex items-center justify-center gap-2">
-                            <Github className="w-5 h-5" />
-                            <span className="text-sm">GitHub</span>
-                        </button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 mb-8 p-1 rounded-xl bg-border-color/30 border border-border-color">
@@ -234,16 +216,7 @@ export default function LoginPage() {
                         </button>
                     </div>
 
-                    <div className="relative flex items-center justify-center mb-8">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-border-color"></div>
-                        </div>
-                        <span className="relative bg-surface-color px-4 text-xs font-black text-text-secondary uppercase tracking-widest leading-none">
-                            Or continue with account
-                        </span>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6 mt-8">
                         <div>
                             <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1 mb-2 block">
                                 {loginMode === "staff"
@@ -268,8 +241,8 @@ export default function LoginPage() {
                             </div>
                             <p className="text-[10px] text-text-secondary mt-2 pl-1 leading-relaxed">
                                 {loginMode === "staff"
-                                    ? "Teachers and platform admins sign in here only."
-                                    : "We store your email and phone at registration for the event. You can sign in with registration ID, that email, or the same mobile number. Your participant code is for check-in on the dashboard — not for this field."}
+                                    ? "For teachers and administrators."
+                                    : "Registration ID, email, or mobile from your signup."}
                             </p>
                         </div>
 
@@ -349,9 +322,6 @@ export default function LoginPage() {
                                         </p>
                                     </>
                                 )}
-                                <p className="font-sans text-[10px] text-text-secondary pt-1">
-                                    Set <code className="text-[10px] bg-border-color/50 px-1 rounded">VITE_HIDE_DEMO_LOGIN=true</code> to hide this block for real events.
-                                </p>
                             </div>
                         </div>
                     )}

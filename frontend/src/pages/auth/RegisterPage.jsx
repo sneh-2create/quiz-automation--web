@@ -21,7 +21,7 @@ export default function RegisterPage() {
         mobile_no: "",
     });
     const [loading, setLoading] = useState(false);
-    const { register } = useAuth();
+    const { register, login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -52,12 +52,20 @@ export default function RegisterPage() {
                           role: "teacher",
                       };
             await register(payload);
+            const portal = form.role === "student" ? "student" : "staff";
+            const loginUsername =
+                form.role === "student"
+                    ? form.registration_id.trim() || form.email.trim()
+                    : form.email.trim();
+            const user = await login(loginUsername, form.password, portal);
             toast.success(
                 form.role === "teacher"
-                    ? "Welcome, Teacher! Your account is ready. 🎓"
-                    : "Account created! Please sign in. 🎉"
+                    ? `Welcome, ${user.full_name}! Your teacher account is ready.`
+                    : `Welcome, ${user.full_name}! Your student account is ready.`
             );
-            navigate("/login");
+            const role = typeof user.role === "string" ? user.role : user.role?.value ?? user.role;
+            if (role === "teacher") navigate("/teacher");
+            else navigate("/student");
         } catch (err) {
             if (!err.response) {
                 toast.error(
@@ -272,7 +280,7 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest pl-1">
-                                    Event analytics (strongly recommended for PIET / multi-college quizzes)
+                                    Additional details (optional)
                                 </p>
                                 <div className="space-y-1">
                                     <label className="text-xs font-black text-text-secondary uppercase tracking-widest pl-1">State / UT</label>
